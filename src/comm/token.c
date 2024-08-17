@@ -184,6 +184,32 @@ PTOKEN TokenCreate(_PoolType_ POOL_TYPE PoolType, _In_ PEPROCESS eProc) {
 }
 
 /*
+ *  TokenUpdate() -
+ *
+ *  Updates the attributes of a 'TOKEN' structure using information from 
+ *  the specified process. This function reinitializes the token by calling 
+ *  'TokenInit' to refresh its attributes based on the provided process.
+ *
+ *  @Token: Pointer to the 'TOKEN' structure that needs to be updated with 
+ *  new attributes.
+ *
+ *  @eProc: Pointer to the 'EPROCESS' structure representing the process 
+ *  from which new token information will be obtained.
+ *
+ *  Return:
+ *    - 'STATUS_SUCCESS' if the token attributes are successfully updated.
+ *    - An appropriate 'NTSTATUS' error code if the update fails or an exception 
+ *      occurs during the initialization.
+ */
+NTSTATUS TokenUpdate(_Inout_ PTOKEN Token, _In_ PEPROCESS eProc) {
+
+    Assert(Token);
+    Assert(eProc);
+
+    return TokenInit(Token, eProc);
+}
+
+/*
  *  TokenCopy() -
  *
  *  Copies the attributes of a source 'TOKEN' structure to a destination 
