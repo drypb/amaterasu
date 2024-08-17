@@ -110,11 +110,11 @@ static NTSTATUS FileEventInitNames(_Inout_ PFILE_EVENT FileEvent, _In_ PFLT_FILE
     NameLen = NameInfo->FinalComponent.Length;
 
     __try {
-        if(PathLen && PathLen < MAX_PATH) {
+        if(PathLen && PathLen < MAX_PATH_WCHAR) {
             RtlCopyMemory(&FileEvent->Path, &NameInfo->Name, NameInfo->Name.Length);
         }
         
-        if(NameLen && NameLen < MAX_PATH) {
+        if(NameLen && NameLen < MAX_PATH_WCHAR) {
             RtlCopyMemory(&FileEvent->Name, &NameInfo->FinalComponent, NameLen);
             Status = STATUS_SUCCESS;
         }
@@ -224,6 +224,7 @@ NTSTATUS FileEventCopy(_Out_ PFILE_EVENT Dest, _In_ PFILE_EVENT Src) {
 
     NTSTATUS Status;
 
+    Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
             CopyToUserMode(Dest->Name, Src->Name, sizeof Src->Name), 

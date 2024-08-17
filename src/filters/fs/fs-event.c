@@ -1,0 +1,241 @@
+
+#include "proc.h"
+#include "time.h"
+
+#include "file-event.h"
+
+/*
+ *  FSEventAlloc() - 
+ *
+ *  Allocates and initializes a file event structure.
+ *
+ *  @PoolType: The type of memory pool (e.g., paged or nonpaged) 
+ *  to allocate the file event from.
+ *
+ *  Return:
+ *    - Pointer to the allocated and initialized 'FS_EVENT' structure.
+ *    - 'NULL' if the allocation fails.
+ */
+static PFS_EVENT FSEventAlloc(_PoolType_ POOL_TYPE PoolType) {
+
+    PFS_EVENT FSEvent;
+
+    FSEvent = ExAllocatePool2(PoolType, sizeof *FSEvent 'fs');
+    if(!FSEvent) {
+        return NULL;
+    }
+
+    RtlZeroMemory(FSEvent, sizeof *FSEvent);
+
+    /*
+     *  Store the pool type used for the allocation in 'FSEvent' to ensure 
+     *  correct memory handling, regardless of whether the caller routine is 
+     *  paged or nonpaged.
+     */
+    FSEvent->PoolType = PoolType;
+
+    return FSEvent;
+}
+
+/*
+ *  FSEventInitProc() -
+ *
+ *  Initializes the process-related information in the 'FS_EVENT' structure 
+ *  by retrieving or creating a 'PROC' structure associated with the process 
+ *  making the file system request. The function also ensures that the process 
+ *  is being tracked by the system and updates its token information if needed.
+ *
+ *  @FSEvent: Pointer to the 'FS_EVENT' structure where the process information 
+ *  will be initialized.
+ *
+ *  @Data: Pointer to the 'FLT_CALLBACK_DATA' structure containing callback 
+ *  data for the file system operation.
+ *
+ *  Return:
+ *    - 'STATUS_SUCCESS' if the process information is successfully initialized 
+ *      and the 'PROC' structure is either retrieved or created and inserted 
+ *      into the tracking system.
+ *    - 'STATUS_UNSUCCESSFUL' if the process cannot be retrieved or if the 
+ *      'PROC' structure cannot be created.
+ */
+static NTSTATUS FSEventInitProc(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data) {
+
+    NTSTATUS Status;
+    PEPROCESS eProc;
+
+    Assert(FSEvent);
+    Assert(Data);
+
+    Status = STATUS_UNSUCCESSFUL;
+    eProc  = FltGetRequestorProcess(Data);
+    if(!eProc) {
+        return Status;
+    }
+
+    /*
+     *  This code checks if the process represented by 'eProc' is already being
+     *  tracked in the system. If it is, we retrieve the existing 'PROC' structure
+     *  associated with that process. If it is not tracked, we create a new 'PROC'
+     *  structure, insert it into the AVL tree that maintains the list of monitored
+     *  processes, and reference it.
+     */
+    FSEvent->Proc = AmaterasuLookup(eProc);
+    if(!FSEvent->Proc) {
+        FSEvent->Proc = ProcCreate(FSEvent->PoolType, eProc);
+        if(FSEvent->Proc) {
+            AmaterasuInsert(FSEvent->Proc);
+            Status = STATUS_SUCCESS;
+        }
+    } else {
+        TokenUpdate(FSEvent->Proc->Token, eProc);
+    }
+
+    ObDereferenceObject(eProc);
+
+    return Status;
+}
+
+/*
+ *  FSEventInit() -
+ *
+ *  Initializes a 'FS_EVENT' structure by setting up the time of the event, 
+ *  and optionally creating a 'FILE_EVENT' structure if a 'FileObject' is 
+ *  present in the filter-related objects. Initializes process information 
+ *  related to the event.
+ *
+ *  @FSEvent: Pointer to the 'FS_EVENT' structure to be initialized.
+ *
+ *  @Data: Pointer to the 'FLT_CALLBACK_DATA' structure containing callback 
+ *  data for the file system operation.
+ *
+ *  @FltObjects: Pointer to the 'CFLT_RELATED_OBJECTS' structure containing 
+ *  filter-related objects.
+ *
+ *  Return:
+ *    - 'STATUS_SUCCESS' if the 'FS_EVENT' structure is successfully 
+ *      initialized.
+ *    - 'STATUS_UNSUCCESSFUL' if the initialization fails, typically due to 
+ *      failure in creating the 'FILE_EVENT' structure.
+ */
+static NTSTATUS FSEventInit(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data, _In_ PCFLT_RELATED_OBJECTS FltObjects) {
+
+    Assert(FSEvent);
+    Assert(Data);
+    Assert(FltObjects);
+
+    TimeInit(&FSEvent->Time);
+    FSEvent->MjFunc = MAJOR_FUNCTION(Data);
+
+    /*
+     *  It is not possible to get a name when
+     *  there's no 'FileObject'.
+     *
+     *  In this case, we report everything except the
+     *  the contents of 'FILE_EVENT'.
+     */
+    if(FltObjects->FileObject) {
+        FSEvent->FileEvent = FileEventCreate(FSEvent->PoolType, Data);
+        if(!FSEvent->FileEvent) {
+            return STATUS_UNSUCCESSFUL;
+        }
+    }
+
+    return FSEventInitProc(FSEvent, Data);
+}
+
+/*
+ *  FSEventCreate() -
+ *
+ *  Allocates and initializes a 'FS_EVENT' structure for file system 
+ *  events. If initialization fails, the allocated 'FS_EVENT' structure is 
+ *  destroyed.
+ *
+ *  @PoolType: Type of memory pool used for allocation.
+ *
+ *  @Data: Pointer to the 'FLT_CALLBACK_DATA' structure containing callback 
+ *  data related to the file system operation.
+ *
+ *  @FltObjects: Contains pointers to the various objects that are pertinent
+ *  to this event.
+ *
+ *  Return:
+ *    - A pointer to the allocated and initialized 'FS_EVENT' structure if 
+ *      successful.
+ *    - 'NULL' if the allocation or initialization fails.
+ */
+PFS_EVENT FSEventCreate(_PoolType_ POOL_TYPE PoolType, _In_ PFLT_CALLBACK_DATA Data, _In_ PCFLT_RELATED_OBJECTS FltObjects) {
+    
+    NSTATUS Status;
+    PFS_EVENT FSEvent;
+
+    Assert(Data);
+
+    FSEvent = FSEventAlloc(PoolType);
+    if(FSEvent) {
+        Status = FSEventInit(FSEvent, Data, FltObjects);
+        if(!NT_SUCCESS(Status)) {
+            FSEventDestroy(&FSEvent);
+        }
+    }
+
+    return FSEvent;
+}
+
+/*
+ *  FSEventCopy() -
+ *
+ *  Copies the contents of a source 'FS_EVENT' structure to a destination 
+ *  'FS_EVENT' structure. This includes copying the process information, 
+ *  time details, major function code, and file event details.
+ *
+ *  @Dest: Pointer to the destination 'FS_EVENT' structure where the 
+ *  contents of the source 'FS_EVENT' structure will be copied.
+ *
+ *  @Src: Pointer to the source 'FS_EVENT' structure from which the contents 
+ *  will be copied.
+ *
+ *  Return:
+ *    - 'STATUS_SUCCESS' if all elements are successfully copied.
+ *    - 'STATUS_UNSUCCESSFUL' if any copy operation fails.
+ */
+NTSTATUS FSEventCopy(_Out_ PFS_EVENT Dest, _In_ PFS_EVENT Src) {
+
+    NTSTATUS Status;
+
+    Assert(Dest);
+    Assert(Src);
+
+    Status = STATUS_UNSUCCESSFUL;
+    if(Dest && Src) {
+        IF_SUCCESS(Status,
+            ProcCopy(Dest->Proc , Src->Proc),
+            TimeCopy(&Dest->Time, &Src->Time),
+            CopyToUserMode(&Dest->MjFunc, &Src->MjFunc, sizeof Src->MjFunc),
+            FileEventCopy(Dest->FileEvent, Src->FileEvent)
+        );
+    }
+
+    return Status;
+}
+
+/*
+ *  FSEventDestroy() -
+ *
+ *  Frees the resources associated with a 'FS_EVENT' structure. This includes
+ *  destroying the process-related information and file event, as well as 
+ *  deallocating the memory used for the 'FS_EVENT' structure itself. The 
+ *  pointer to the 'FS_EVENT' structure is set to 'NULL' after deallocation.
+ *
+ *  @FSEvent: Pointer to the pointer of the 'FS_EVENT' structure that is to 
+ *  be destroyed. The function will deallocate the structure and its associated
+ *  resources if the pointer is valid.
+ */
+void FSEventDestroy(_Inout_ PFS_EVENT* FSEvent) {
+
+    if(FSEvent && *FSEvent) {
+        ProcDestroy(&(*FSEvent)->Proc);
+        FileEventDestroy(&(*FSEvent)->FileEvent);
+        ExFreePoolWithTag((*FSEvent));
+        *FSEvent = NULL;
+    }
+}

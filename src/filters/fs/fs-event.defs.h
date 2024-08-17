@@ -1,5 +1,7 @@
-#ifndef TOKEN_DEFS_H
-#define TOKEN_DEFS_H
+#ifndef FS_EVENT_DEFS_H
+#define FS_EVENT_DEFS_H
+
+#define MAJOR_FUNCTION(Data) ((Data)->Iopb->MajorFunction)
 
 /*
  *  The 'IF_SUCCESS' macro is designed to execute a sequence of function calls
@@ -7,8 +9,8 @@
  *  (i.e., a status code indicating failure), the macro will short-circuit and
  *  stop executing further calls.
  *
- *  The 'IF_SUCCESS' macro is implementation specific for each module. In
- *  this case, it is made only for the fields of the 'TOKEN' struct.
+ *  The 'IF_SUCCESS' macro the implementation specific for each module. In
+ *  this case, it is made only for the fields of the 'FS_EVENT' struct.
  */
 #define IF_SUCCESS(Status, F1, F2, F3, F4)                  \
     do {                                                    \
@@ -24,4 +26,4 @@
         }                                                   \
     } while(0)
 
-#endif  /* TOKEN_DEFS_H */
+#endif  /* FS_EVENT_DEFS_H */

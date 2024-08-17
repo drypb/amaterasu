@@ -21,10 +21,12 @@
  *    is accessible for writing and `RtlCopyMemory` to perform the actual
  *    copy. The alignment of the source buffer is used for the probe operation.
  */
-#define PROBE_AND_COPY(Dest, Src, Size)               \
-    do {                                              \
-        ProbeForWrite(Dest, Src, __alignof(*Src));    \
-        RtlCopyMemory(Dest, Src, Size);               \
+#define PROBE_AND_COPY(Dest, Src, Size)                     \
+    do {                                                    \
+        if(Dest && Src) {                                   \
+            ProbeForWrite(Dest, Src, __alignof(*Src));      \
+            RtlCopyMemory(Dest, Src, Size);                 \
+        }                                                   \
     } while(0)
 
 #endif  /* UTILS_DEFS_H */

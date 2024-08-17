@@ -1,5 +1,5 @@
-#ifndef TOKEN_DEFS_H
-#define TOKEN_DEFS_H
+#ifndef PROC_DEFS_H
+#define PROC_DEFS_H
 
 /*
  *  The 'IF_SUCCESS' macro is designed to execute a sequence of function calls
@@ -8,9 +8,9 @@
  *  stop executing further calls.
  *
  *  The 'IF_SUCCESS' macro is implementation specific for each module. In
- *  this case, it is made only for the fields of the 'TOKEN' struct.
+ *  this case, it is made only for the fields of the 'PROC' struct.
  */
-#define IF_SUCCESS(Status, F1, F2, F3, F4)                  \
+#define IF_SUCCESS(Status, F1, F2, F3, F4, F5)              \
     do {                                                    \
         Status = F1;                                        \
         if(NT_SUCCESS(Status)) {                            \
@@ -19,9 +19,12 @@
                 Status = F3;                                \
                 if(NT_SUCCESS(Status)) {                    \
                     Status = F4;                            \
+                    if(NT_SUCCESS(Status)) {                \
+                        Status = F5;                        \
+                    }                                       \
                 }                                           \
             }                                               \
         }                                                   \
     } while(0)
 
-#endif  /* TOKEN_DEFS_H */
+#endif  /* PROC_DEFS_H */
