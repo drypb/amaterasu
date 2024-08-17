@@ -1,7 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
 
-#include "utils.defs.h"
+#include "utils.h"
 
 /*
  *  CopyToUserMode() -
@@ -22,10 +20,15 @@
  *    - 'STATUS_UNSUCCESSFUL' if an exception occurs during the copy operation.
  *
  */
-extern NTSTATUS CopyToUserMode(
-        _Out_ PVOID  Dest,
-        _In_  PVOID  Src,
-        _In_  SIZE_T Size
-    );
+NTSTATUS CopyToUserMode(_Out_ PVOID Dest, _In_ PVOID Src, _In_ SIZE_T Size) {
+    
+    if(Dest && Src) {
+        __try {
+            PROBE_AND_COPY(Dest, Src, Size);
+        } __except() {
+            return STATUS_UNSUCCESSFUL;
+        }
+    }
 
-#endif  /* UTILS_H */
+    return STATUS_SUCCESS;
+}
