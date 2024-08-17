@@ -2,6 +2,8 @@
 #define COMM_DEFS_H
 
 #define MAX_PATH        260
+#define MAX_PATH_WCHAR  MAX_PATH * sizeof(WCHAR)
+
 #define MAX_DATA        2048
 #define MAX_STR_SIZE    NTSTRSAFE_UNICODE_STRING_MAX_CCH * sizeof(WCHAR)
 
