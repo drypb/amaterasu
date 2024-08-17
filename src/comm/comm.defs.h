@@ -1,13 +1,12 @@
 #ifndef COMM_DEFS_H
 #define COMM_DEFS_H
 
+#define MAX_DATA        2048
 #define MAX_PATH        260
 #define MAX_PATH_WCHAR  MAX_PATH * sizeof(WCHAR)
-
-#define MAX_DATA        2048
 #define MAX_STR_SIZE    NTSTRSAFE_UNICODE_STRING_MAX_CCH * sizeof(WCHAR)
 
-#define _PoolType_ __drv_strictTypeMatch(__drv_typeExpr)
+#define _PoolType_      __drv_strictTypeMatch(__drv_typeExpr)
 
 /*
  *  Debug() -
@@ -45,7 +44,7 @@ DbgPrintEx(						                                                        	\
 ((expr)													                                	\
 	? (void)0											                                	\
 	: Debug(												                                \
-		"Assertion failed - %s:%s:%d: "#expr" - "fmt,	                                	\
+		"Assertion failed - %s:%s:%d: "#expr" - "#fmt,	                                	\
 		__func__,										                                	\
 		__LINE__,										                                	\
        ##__VA_ARGS__						     			                                \
