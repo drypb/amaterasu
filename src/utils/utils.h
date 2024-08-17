@@ -20,7 +20,6 @@
  *  Return:
  *    - 'STATUS_SUCCESS' if the data is successfully copied to user mode.
  *    - 'STATUS_UNSUCCESSFUL' if an exception occurs during the copy operation.
- *
  */
 extern NTSTATUS 
 CopyToUserMode(

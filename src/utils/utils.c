@@ -18,7 +18,6 @@
  *  Return:
  *    - 'STATUS_SUCCESS' if the data is successfully copied to user mode.
  *    - 'STATUS_UNSUCCESSFUL' if an exception occurs during the copy operation.
- *
  */
 NTSTATUS CopyToUserMode(_Out_ PVOID Dest, _In_ PVOID Src, _In_ SIZE_T Size) {
     
