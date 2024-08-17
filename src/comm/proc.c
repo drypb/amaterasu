@@ -200,6 +200,7 @@ NTSTATUS ProcCopy(_Out_ PPROC Dest, _In_ PPROC Src) {
     
     NTSTATUS Status;
 
+    Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
             CopyToUserMode(Dest->Image, Src->Image, sizeof Src->Image),

@@ -231,6 +231,7 @@ NTSTATUS TokenCopy(_Out_ PTOKEN Dest, _In_  PTOKEN Src) {
 
     NTSTATUS Status;
 
+    Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
             CopyToUserMode(Dest->Privileges, Src->Privileges, sizeof Src->Privileges),
