@@ -73,21 +73,15 @@ static NTSTATUS FSEventInitProc(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DA
     }
 
     /*
-     *  This code checks if the process represented by 'eProc' is already being
-     *  tracked in the system. If it is, we retrieve the existing 'PROC' structure
-     *  associated with that process. If it is not tracked, we create a new 'PROC'
-     *  structure, insert it into the AVL tree that maintains the list of monitored
-     *  processes, and reference it.
+     *  This code retrieves the existing 'PROC' structure associated with the
+     *  requestor process from the AVL tree that maintains the list of
+     *  monitored processes. Given that the process is already being tracked,
+     *  this lookup should never fail.
      */
     FSEvent->Proc = AmaterasuLookup(eProc);
-    if(!FSEvent->Proc) {
-        FSEvent->Proc = ProcCreate(FSEvent->PoolType, eProc);
-        if(FSEvent->Proc) {
-            AmaterasuInsert(FSEvent->Proc);
-            Status = STATUS_SUCCESS;
-        }
-    } else {
+    if(FSEvent->Proc) {
         TokenUpdate(FSEvent->Proc->Token, eProc);
+        Status = STATUS_SUCCESS;
     }
 
     ObDereferenceObject(eProc);
@@ -221,19 +215,23 @@ NTSTATUS FSEventCopy(_Out_ PFS_EVENT Dest, _In_ PFS_EVENT Src) {
 /*
  *  FSEventDestroy() -
  *
- *  Frees the resources associated with a 'FS_EVENT' structure. This includes
- *  destroying the process-related information and file event, as well as 
- *  deallocating the memory used for the 'FS_EVENT' structure itself. The 
- *  pointer to the 'FS_EVENT' structure is set to 'NULL' after deallocation.
+ *  This function frees the resources associated with an 'FS_EVENT' structure, 
+ *  including the memory allocated for the structure itself and any related 
+ *  components like 'FileEvent'. After deallocation, the pointer to the 
+ *  'FS_EVENT' structure is set to 'NULL' to prevent dangling pointers.
  *
- *  @FSEvent: Pointer to the pointer of the 'FS_EVENT' structure that is to 
- *  be destroyed. The function will deallocate the structure and its associated
- *  resources if the pointer is valid.
+ *  @FSEvent: Pointer to a pointer of the 'FS_EVENT' structure that is to be 
+ *  destroyed. The function deallocates the structure and its associated 
+ *  resources only if the pointer is valid.
  */
 void FSEventDestroy(_Inout_ PFS_EVENT* FSEvent) {
 
     if(FSEvent && *FSEvent) {
-        ProcDestroy(&(*FSEvent)->Proc);
+        /*
+         *  The 'Proc' field in the 'FSEvent' structure is not destroyed here 
+         *  because it is merely a reference to an object in the AVL tree that 
+         *  tracks processes monitored by Amaterasu.
+         */
         FileEventDestroy(&(*FSEvent)->FileEvent);
         ExFreePoolWithTag((*FSEvent));
         *FSEvent = NULL;
