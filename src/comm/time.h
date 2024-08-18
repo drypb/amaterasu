@@ -9,7 +9,7 @@ struct _TIME {
     UINT64      Clock;
 };
 
-typedef struct _TIME TIME, PTIME;
+typedef struct _TIME TIME, *PTIME;
 
 /*
  *  TimeInit() -
