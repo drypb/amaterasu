@@ -9,7 +9,7 @@
  *  (i.e., a status code indicating failure), the macro will short-circuit and
  *  stop executing further calls.
  *
- *  The 'IF_SUCCESS' macro the implementation specific for each module. In
+ *  The 'IF_SUCCESS' macro has a specific implementation for each module. In
  *  this case, it is made only for the fields of the 'FS_EVENT' struct.
  */
 #define IF_SUCCESS(Status, F1, F2, F3, F4)                  \
