@@ -5,6 +5,7 @@
 #include <ntstrsafe.h>
 #include <suppress.h>
 #include <dontuse.h>
+#include <ntddk.h>
 #include <ntifs.h>
 #include <wdm.h>
 
