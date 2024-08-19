@@ -55,8 +55,7 @@ static PFS_EVENT FSEventAlloc(_PoolType_ POOL_TYPE PoolType) {
  *    - 'STATUS_SUCCESS' if the process information is successfully initialized 
  *      and the 'PROC' structure is either retrieved or created and inserted 
  *      into the tracking system.
- *    - 'STATUS_UNSUCCESSFUL' if the process cannot be retrieved or if the 
- *      'PROC' structure cannot be created.
+ *    - 'STATUS_UNSUCCESSFUL' if the process cannot be retrieved.
  */
 static NTSTATUS FSEventInitProc(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data) {
 
