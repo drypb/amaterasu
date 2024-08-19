@@ -1,5 +1,6 @@
 
 #include "ioctl.h"
+#include "ioctl.defs.h"
 
 static UNICODE_STRING DriverName, DeviceSymLink;
 
