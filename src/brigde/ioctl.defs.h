@@ -1,8 +1,8 @@
 #ifndef IOCTL_DEFS_H
 #define IOCTL_DEFS_H
 
-#define DRIVER_NAME     L"\\Device\\MiniFilter"
-#define DEVICE_SYM_LINK L"\\DosDevices\\MiniFilter"
+#define DRIVER_NAME     L"\\Device\\Amaterasu"
+#define DEVICE_SYM_LINK L"\\DosDevices\\Amaterasu"
 
 #define IOCTL_GET_FS_EVENT      CTL_CODE()
 #define IOCTL_GET_PROC_EVENT    CTL_CODE()
