@@ -91,18 +91,22 @@ static NTSTATUS FSEventInitProc(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DA
 /*
  *  FSEventInitOptions() - 
  *
- *  Initializes specific options for a file system event based on the IRP (I/O
- *  Request Packet) major function code. This function extracts relevant
- *  options from the provided callback data (IRP) and stores them in the
- *  'FSEvent' structure.
+ *  Initializes specific options for a file system event based on the IRP major
+ *  function code. This function extracts relevant options from the provided
+ *  callback data (IRP) and stores them in the 'FSEvent' structure.
  *
  *  @FSEvent: A pointer to the 'FS_EVENT' structure that will be updated with
  *  the appropriate options based on the IRP major function.
  *
  *  @Data: A pointer to the 'FLT_CALLBACK_DATA' structure containing the IRP
  *  information used to determine and set the options in 'FSEvent'.
+ *
+ *  Return:
+ *    - 'STATUS_SUCCESS' if the initialization is successful.
+ *    - Appropriate 'NTSTATUS' error code if an error occurs during
+ *      initialization.
  */
-static void FSEventInitOptions(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data) {
+static NTSTATUS FSEventInitOptions(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data) {
 
     PIO_STACK_LOCATION IrpIoStack;
 
@@ -110,16 +114,62 @@ static void FSEventInitOptions(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DAT
     Assert(Data);
 
     IrpIoStack = IoGetCurrentIrpStackLocation(Data->Irp);
-    if(IrpIoStack) {
-        switch(FSEvent->MjFunc) {
-            case IRP_MJ_CREATE:
-                FSEvent->Options = IrpStackLocation->Parameters.Create.Options;
-                break;
-
-            case IRP_MJ_SET_INFORMATION:
-                FSEvent->Options = IrpStackLocation->Parameters.SetFile.FileInformationClass;
-        }
+    if(!IrpIoStack) {
+        return STATUS_UNSUCCESSFUL;
     }
+
+    switch(FSEvent->MjFunc) {
+        /*
+         * Handles IRP_MJ_CREATE, which is triggered when a file or device is
+         * opened. This is useful for detecting malware's file or device access 
+         * patterns, such as creation or opening of files which may be part of 
+         * malicious activity or file manipulation.
+         */
+        case IRP_MJ_CREATE:
+            FSEvent->Options = IrpIoStack->Parameters.Create.Options;
+            break;
+
+        /*
+         * Handles IRP_MJ_SET_INFORMATION, which is used to modify file
+         * information. This information helps in understanding the changes
+         * malware makes to file attributes or properties, such as altering
+         * file permissions or timestamps to evade detection.
+         */
+        case IRP_MJ_SET_INFORMATION:
+            FSEvent->Options = IrpIoStack->Parameters.SetFile.FileInformationClass;
+            break;
+
+        /*
+         * Handles IRP_MJ_QUERY_INFORMATION, which queries file or device
+         * information. This is valuable for identifying what details malware 
+         * seeks about files or devices, potentially revealing its intent to 
+         * access or manipulate specific system resources.
+         */
+        case IRP_MJ_QUERY_INFORMATION:
+            FSEvent->Options = IrpIoStack->Parameters.QueryFile.FileInformationClass;
+            break;
+
+        /*
+         * Handles IRP_MJ_DEVICE_CONTROL, which manages device-specific control
+         * operations. This is useful for monitoring custom commands sent by
+         * malware to device drivers, which might be used for malicious control
+         * or data manipulation.
+         */
+        case IRP_MJ_DEVICE_CONTROL:
+            FSEvent->Options = IrpIoStack->Parameters.DeviceIoControl.FileInformationClass;
+            break;
+
+        /*
+         * Handles IRP_MJ_DIRECTORY_CONTROL, which queries or manipulates
+         * directory contents. This helps in analyzing how malware interacts with
+         * directory structures, such as listing or altering directory contents 
+         * which may be indicative of attempts to hide or manipulate files.
+         */
+        case IRP_MJ_DIRECTORY_CONTROL:
+            FSEvent->Options = IrpIoStack->Parameters.QueryDirectory.FileInformationClass;
+    }
+
+    return STATUS_SUCCESS;
 }
 
 /*
