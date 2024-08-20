@@ -159,6 +159,7 @@ static NTSTATUS FSFltrInit(_Inout_ PFSFLTR FSFltr, _Inout_ PDRIVER_OBJECT Driver
 
     Status = STATUS_UNSUCCESSFUL;
 
+    FSFltr->Copy = FSEventCopy;
     FSFltr->List = ListCreate(FSFltr->PoolType, FSFLTR_MAX, FSEventFree);
     if(FSFltr->List) {
         Status = FltRegisterFilter(DriverObject, &FilterRegistration, &FSFltr->FilterHandle);

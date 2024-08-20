@@ -7,6 +7,7 @@ struct _FSFLTR {
 
     PDRIVER_OBJECT DriverObj;
     PFLT_FILTER    FilterHandle;
+    COPY           Copy;
     LIST           List;
 };
 
