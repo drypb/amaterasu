@@ -36,8 +36,9 @@ typedef struct _FS_EVENT FS_EVENT, *PFS_EVENT;
  */
 extern PFS_EVENT
 FSEventCreate(
-        _PoolType_ POOL_TYPE            PoolType,
-        _In_       PFLT_CALLBACK_DATA   Data
+        _PoolType_ POOL_TYPE             PoolType,
+        _In_       PFLT_CALLBACK_DATA    Data,
+        _In_       PCFLT_RELATED_OBJECTS FltObjects
     );
 
 /*
