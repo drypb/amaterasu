@@ -14,7 +14,7 @@
  *    - Pointer to the allocated 'PROC' structure on success.
  *    - 'NULL' if memory allocation fails.
  */
-PPROC ProcAlloc(_PoolType_ POOL_TYPE PoolType) {
+static PPROC ProcAlloc(_PoolType_ POOL_TYPE PoolType) {
 
     PPROC Proc;
 
