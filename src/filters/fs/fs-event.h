@@ -9,6 +9,7 @@ struct _FS_EVENT {
     PPROC       Proc;
     TIME        Time;
     UCHAR       MjFunc;
+    ULONG       Options;
     PFILE_EVENT FileEvent;
 };
 
@@ -36,8 +37,9 @@ typedef struct _FS_EVENT FS_EVENT, *PFS_EVENT;
  */
 extern PFS_EVENT
 FSEventCreate(
-        _PoolType_ POOL_TYPE            PoolType,
-        _In_       PFLT_CALLBACK_DATA   Data
+        _PoolType_ POOL_TYPE             PoolType,
+        _In_       PFLT_CALLBACK_DATA    Data,
+        _In_       PCFLT_RELATED_OBJECTS FltObjects
     );
 
 /*
@@ -66,14 +68,14 @@ FSEventCopy(
 /*
  *  FSEventDestroy() -
  *
- *  Frees the resources associated with a 'FS_EVENT' structure. This includes
- *  destroying the process-related information and file event, as well as 
- *  deallocating the memory used for the 'FS_EVENT' structure itself. The 
- *  pointer to the 'FS_EVENT' structure is set to 'NULL' after deallocation.
+ *  This function frees the resources associated with an 'FS_EVENT' structure, 
+ *  including the memory allocated for the structure itself and any related 
+ *  components like 'FileEvent'. After deallocation, the pointer to the 
+ *  'FS_EVENT' structure is set to 'NULL' to prevent dangling pointers.
  *
- *  @FSEvent: Pointer to the pointer of the 'FS_EVENT' structure that is to 
- *  be destroyed. The function will deallocate the structure and its associated
- *  resources if the pointer is valid.
+ *  @FSEvent: Pointer to a pointer of the 'FS_EVENT' structure that is to be 
+ *  destroyed. The function deallocates the structure and its associated 
+ *  resources only if the pointer is valid.
  */
 extern void
 FSEventDestroy(

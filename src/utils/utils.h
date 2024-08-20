@@ -6,20 +6,24 @@
 /*
  *  CopyToUserMode() -
  *
- *  Copies a block of data from kernel mode to user mode, ensuring that
- *  the copy operation is safely performed and any exceptions are handled.
+ *  Copies data from a kernel mode buffer to a user mode buffer, ensuring
+ *  proper alignment and exception handling to safely manage potential errors
+ *  during the copy operation. If an exception is caught, the function returns
+ *  'STATUS_UNSUCCESSFUL'. Otherwise, it returns 'STATUS_SUCCESS' after a
+ *  successful copy.
  *
- *  @Dest: Pointer to the destination buffer in user mode where the data 
- *  will be copied to.
+ *  @Dest: A pointer to the destination buffer in user mode where the data will
+ *  be copied.
  *
- *  @Src: Pointer to the source buffer in kernel mode from which the data 
+ *  @Src: A pointer to the source buffer in kernel mode from which the data
  *  will be copied.
  *
- *  @Size: The size of the data to be copied, in bytes.
+ *  @Size: The size of the buffer, in bytes, of the data to be copied.
+ *  @Align: The alignment requirement for the data to be copied.
  *
  *  Return:
- *    - 'STATUS_SUCCESS' if the data is successfully copied to user mode.
- *    - 'STATUS_UNSUCCESSFUL' if an exception occurs during the copy operation.
+ *    - 'STATUS_SUCCESS' if the data was successfully copied.
+ *    - 'STATUS_UNSUCCESSFUL' if an exception occurred during the copy.
  */
 extern NTSTATUS 
 CopyToUserMode(

@@ -14,7 +14,7 @@
  *    - Pointer to the allocated 'PROC' structure on success.
  *    - 'NULL' if memory allocation fails.
  */
-PPROC ProcAlloc(_PoolType_ POOL_TYPE PoolType) {
+static PPROC ProcAlloc(_PoolType_ POOL_TYPE PoolType) {
 
     PPROC Proc;
 
@@ -203,11 +203,11 @@ NTSTATUS ProcCopy(_Out_ PPROC Dest, _In_ PPROC Src) {
     Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
-            CopyToUserMode(Dest->Image, Src->Image, sizeof Src->Image),
-            CopyToUserMode(&Dest->PPID, &Src->PPID, sizeof Src->PPID),
-            CopyToUserMode(&Dest->PID , &Src->PID , sizeof Src->PID),
-            CopyToUserMode(&Dest->SID , &Src->SID , sizeof Src->SID),
-            TokenCopy(Dest->Token, Src->Token)
+            TokenCopy(Dest->Token, Src->Token),
+            CopyToUserMode(Dest->Image, Src->Image, sizeof Src->Image, WCHAR ),
+            CopyToUserMode(&Dest->PPID, &Src->PPID, sizeof Src->PPID , HANDLE),
+            CopyToUserMode(&Dest->PID , &Src->PID , sizeof Src->PID  , HANDLE),
+            CopyToUserMode(&Dest->SID , &Src->SID , sizeof Src->SID  , HANDLE)
         );
     }
 

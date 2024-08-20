@@ -67,8 +67,8 @@ NTSTATUS TimeCopy(_Out_ PTIME Dest, _In_ PTIME Src) {
     Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
-            CopyToUserMode(&Dest->TimeFields, &Src->TimeFields, sizeof Src->TimeFields),
-            CopyToUserMode(&Dest->Clock, &Src->Clock, sizeof Src->Clock)
+            CopyToUserMode(&Dest->TimeFields, &Src->TimeFields, sizeof Src->TimeFields, TIME_FIELDS),
+            CopyToUserMode(&Dest->Clock, &Src->Clock, sizeof Src->Clock, UINT64)
         );
     }
 
