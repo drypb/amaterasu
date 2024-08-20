@@ -89,6 +89,26 @@ static NTSTATUS FSEventInitProc(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DA
 }
 
 /*
+ *  FSEventInitOptions() - 
+ *
+ *  @FSEvent:
+ *  @Data:
+ *
+ *  Return:
+ *    -
+ *    -
+ */
+static NTSTATUS FSEventInitOptions(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data) {
+
+    NTSTATUS Status;
+
+    Assert(FSEvent);
+    Assert(Data);
+
+    return Status;
+}
+
+/*
  *  FSEventInit() -
  *
  *  Initializes a 'FS_EVENT' structure by setting up the time of the event, 
@@ -133,7 +153,12 @@ static NTSTATUS FSEventInit(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA D
         }
     }
 
-    return FSEventInitProc(FSEvent, Data);
+    Status = FSEventInitProc(FSEvent, Data);
+    if(NT_SUCCESS(Status)) {
+        Status = FSEventInitOptions(FSEvent, Data);
+    }
+
+    return Status;
 }
 
 /*
@@ -203,8 +228,9 @@ NTSTATUS FSEventCopy(_Out_ PFS_EVENT Dest, _In_ PFS_EVENT Src) {
         IF_SUCCESS(Status,
             ProcCopy(Dest->Proc , Src->Proc),
             TimeCopy(&Dest->Time, &Src->Time),
-            CopyToUserMode(&Dest->MjFunc, &Src->MjFunc, sizeof Src->MjFunc),
-            FileEventCopy(Dest->FileEvent, Src->FileEvent)
+            FileEventCopy(Dest->FileEvent, Src->FileEvent),
+            CopyToUserMode(&Dest->MjFunc , &Src->MjFunc  , sizeof Src->MjFunc , UCHAR),
+            CopyToUserMode(&Dest->Options, &Dest->Options, sizeof Src->Options, ULONG);
         );
     }
 

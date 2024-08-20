@@ -173,12 +173,38 @@ DbgPrintEx(						                            \
  *    is accessible for writing and `RtlCopyMemory` to perform the actual
  *    copy. The alignment of the source buffer is used for the probe operation.
  */
-#define PROBE_AND_COPY(Dest, Src, Size)                     \
+#define PROBE_AND_COPY(Dest, Src, Size, Align)              \
     do {                                                    \
         if(Dest && Src) {                                   \
-            ProbeForWrite(Dest, Src, __alignof(*Src));      \
+            ProbeForWrite(Dest, Src, Align);                \
             RtlCopyMemory(Dest, Src, Size);                 \
         }                                                   \
     } while(0)
+
+/*
+ *  CopyToUserMode() -
+ *
+ *  A macro that wraps the `CopyToUserMode` function, providing an easier way
+ *  to copy data from a kernel mode buffer to a user mode buffer while ensuring
+ *  correct alignment based on the data type. This ensures that the data is
+ *  properly aligned in memory, which is crucial for avoiding potential access
+ *  violations or performance penalties on some architectures.
+ *
+ *  @Dest: A pointer to the destination buffer in user mode where the data will
+ *  be copied.
+ *
+ *  @Src: A pointer to the source buffer in kernel mode from which the data
+ *  will be copied.
+ *
+ *  @Size: The size, in bytes, of the data to be copied.
+ *  @Type: The type of the data being copied, used to determine the correct
+ *  alignment.
+ *
+ *  Return:
+ *    - 'STATUS_SUCCESS' if the data was successfully copied.
+ *    - 'STATUS_UNSUCCESSFUL' if an exception occurred during the copy.
+ */
+#define CopyToUserMode(Dest, Src, Size, Type)               \
+        (CopyToUserMode)(Dest, Src, Size, __alignof(Type))
 
 #endif  /* UTILS_DEFS_H */
