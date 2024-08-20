@@ -9,6 +9,7 @@ struct _FS_EVENT {
     PPROC       Proc;
     TIME        Time;
     UCHAR       MjFunc;
+    ULONG       Options;
     PFILE_EVENT FileEvent;
 };
 
