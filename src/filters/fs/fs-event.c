@@ -91,21 +91,35 @@ static NTSTATUS FSEventInitProc(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DA
 /*
  *  FSEventInitOptions() - 
  *
- *  @FSEvent:
- *  @Data:
+ *  Initializes specific options for a file system event based on the IRP (I/O
+ *  Request Packet) major function code. This function extracts relevant
+ *  options from the provided callback data (IRP) and stores them in the
+ *  'FSEvent' structure.
  *
- *  Return:
- *    -
- *    -
+ *  @FSEvent: A pointer to the 'FS_EVENT' structure that will be updated with
+ *  the appropriate options based on the IRP major function.
+ *
+ *  @Data: A pointer to the 'FLT_CALLBACK_DATA' structure containing the IRP
+ *  information used to determine and set the options in 'FSEvent'.
  */
-static NTSTATUS FSEventInitOptions(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data) {
+static void FSEventInitOptions(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA Data) {
 
-    NTSTATUS Status;
+    PIO_STACK_LOCATION IrpIoStack;
 
     Assert(FSEvent);
     Assert(Data);
 
-    return Status;
+    IrpIoStack = IoGetCurrentIrpStackLocation(Data->Irp);
+    if(IrpIoStack) {
+        switch(FSEvent->MjFunc) {
+            case IRP_MJ_CREATE:
+                FSEvent->Options = IrpStackLocation->Parameters.Create.Options;
+                break;
+
+            case IRP_MJ_SET_INFORMATION:
+                FSEvent->Options = IrpStackLocation->Parameters.SetFile.FileInformationClass;
+        }
+    }
 }
 
 /*
@@ -155,7 +169,7 @@ static NTSTATUS FSEventInit(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA D
 
     Status = FSEventInitProc(FSEvent, Data);
     if(NT_SUCCESS(Status)) {
-        Status = FSEventInitOptions(FSEvent, Data);
+        FSEventInitOptions(FSEvent, Data);
     }
 
     return Status;
@@ -230,7 +244,7 @@ NTSTATUS FSEventCopy(_Out_ PFS_EVENT Dest, _In_ PFS_EVENT Src) {
             TimeCopy(&Dest->Time, &Src->Time),
             FileEventCopy(Dest->FileEvent, Src->FileEvent),
             CopyToUserMode(&Dest->MjFunc , &Src->MjFunc  , sizeof Src->MjFunc , UCHAR),
-            CopyToUserMode(&Dest->Options, &Dest->Options, sizeof Src->Options, ULONG);
+            CopyToUserMode(&Dest->Options, &Dest->Options, sizeof Src->Options, ULONG)
         );
     }
 
