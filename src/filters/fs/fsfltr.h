@@ -5,6 +5,7 @@
 
 struct _FSFLTR {
 
+    POOL_TYPE      PoolType;
     PDRIVER_OBJECT DriverObj;
     PFLT_FILTER    FilterHandle;
     COPY           Copy;
