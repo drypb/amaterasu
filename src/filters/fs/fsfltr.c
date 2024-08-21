@@ -33,7 +33,7 @@ static FLT_PREOP_CALLBACK_STATUS FSFltrDefaultCallback(_Inout_ PFLT_CALLBACK_DAT
 
     eProc = FltGetRequestorProcess(Data);
     if(eProc) {
-        if(AmaterasuLookup(eProc)) {
+        if(AmaterasuLookupNoRef(eProc)) {
             FSEvent = FSEventCreate(Amaterasu.FSFltr->PoolType, Data, FltObjs);
             if(FSEvent) {
                 ListInsert(Amaterasu.FSFltr->List, FSEvent);
@@ -157,10 +157,9 @@ static NTSTATUS FSFltrInit(_Inout_ PFSFLTR FSFltr, _Inout_ PDRIVER_OBJECT Driver
     Assert(FSFltr);
     Assert(DriverObj);
 
-    Status = STATUS_UNSUCCESSFUL;
 
     FSFltr->Copy = FSEventCopy;
-    FSFltr->List = ListCreate(FSFltr->PoolType, FSFLTR_MAX, FSEventFree);
+    FSFltr->List = ListCreate(FSFltr->PoolType, FSFLTR_MAX, FSEventDestroy);
     if(FSFltr->List) {
         Status = FltRegisterFilter(DriverObject, &FilterRegistration, &FSFltr->FilterHandle);
         if(NT_SUCCESS(Status)) {
@@ -168,11 +167,11 @@ static NTSTATUS FSFltrInit(_Inout_ PFSFLTR FSFltr, _Inout_ PDRIVER_OBJECT Driver
              *  'FltStartFiltering()' notifies the Filter Manager that 'Amaterasu'
              *  is ready to begin attaching to volumes and filtering I/O requests.
              */
-            Status = FltStartFiltering(FSFltr->FilterHandle);
+            return FltStartFiltering(FSFltr->FilterHandle);
         }
     }
 
-    return Status;
+    return STATUS_UNSUCCESSFUL;
 }
 
 /*
@@ -201,7 +200,7 @@ PFSFLTR FSFltrLoad(_Inout_ PDRIVER_OBJECT DriverObj) {
     if(FSFltr) {
         Status = FSFltrInit(FSFltr, DriverObj);
         if(!NT_SUCCESS(Status)) {
-            FSFltrDealloc(&FSFltr);
+            FSFltrUnload(&FSFltr);
         }
     }
 
