@@ -10,5 +10,8 @@
 #include <wdm.h>
 
 #include "comm.defs.h"
+#include "utils.h"
+
+typedef NTSTATUS (*Copy)(void*, void*);
 
 #endif  /* COMM_H */
