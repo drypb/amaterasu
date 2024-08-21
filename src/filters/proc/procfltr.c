@@ -155,3 +155,24 @@ PPROCFLTR ProcFltrLoad(_Inout_ PDRIVER_OBJECT DriverObj) {
 
     return ProcFltr;
 }
+
+/*
+ * ProcFltrUnload() -
+ *
+ * Unloads and cleans up the process filter. This function destroys the
+ * internal list, unregisters the process creation notification callback, and
+ * frees the memory allocated for the process filter structure.
+ *
+ * @ProcFltr: A pointer to the process filter structure that needs to be
+ * unloaded and deallocated. After the function is executed, the pointer is set
+ * to 'NULL'.
+ */
+void ProcFltrUnload(_Inout_ PPROCFLTR* ProcFltr) {
+
+    if(ProcFltr && *ProcFltr) {
+        ListDestroy((*ProcFltr)->List);
+        PsSetCreateProcessNotifyRoutine(ProcFltrCallback, TRUE);
+        ExFreePoolWithTag(*ProcFltr, 'pftr');
+        *ProcFltr = NULL;
+    }
+}
