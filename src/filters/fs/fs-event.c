@@ -219,7 +219,7 @@ static NTSTATUS FSEventInit(_Inout_ PFS_EVENT FSEvent, _In_ PFLT_CALLBACK_DATA D
 
     Status = FSEventInitProc(FSEvent, Data);
     if(NT_SUCCESS(Status)) {
-        FSEventInitOptions(FSEvent, Data);
+        Status = FSEventInitOptions(FSEvent, Data);
     }
 
     return Status;
