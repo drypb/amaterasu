@@ -159,6 +159,7 @@ NTSTATUS ProcEventCopy(_Out_ PPROC_EVENT Dest, _In_ PPROC_EVENT Src) {
 void ProcEventDestroy(_Inout_ PPROC_EVENT* ProcEvent) {
 
     if(ProcEvent && *ProcEvent) {
+        ProcUnref((*ProcEvent)->Proc);
         /*
          *  The 'Proc' field in the 'PROC_EVENT' structure is not destroyed here 
          *  because it is merely a reference to an object in the AVL tree that 

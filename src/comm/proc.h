@@ -9,6 +9,7 @@
  *  @PID  : Process ID
  *  @SID  : Session ID
  *  @Token: Process tokens
+ *  @Ref  : Reference counter
  */
 struct _PROC {
 
@@ -19,6 +20,7 @@ struct _PROC {
     HANDLE PID; 
     HANDLE SID;
     PTOKEN Token;
+    SIZE_T Ref;
 };
 
 typedef struct _PROC PROC, *PPROC;
@@ -67,6 +69,37 @@ extern NTSTATUS
 ProcCopy(
         _Out_ PPROC Dest,
         _In_  PPROC Src
+    );
+
+/*
+ *  ProcRef() -
+ *
+ *  Increments the reference count of a process structure. This function is used
+ *  to indicate that a reference to the process structure is being held.
+ *
+ *  @Proc: A pointer to the process structure whose reference count is to be
+ *  incremented.
+ */
+extern void 
+ProcRef(
+        _Inout_ PPROC Proc
+    );
+
+/*
+ *  ProcUnref() -
+ *
+ *  Decrements the reference count of a process structure and destroys it if
+ *  the reference count reaches zero. This function is used to release a
+ *  reference to the process structure, and if no more references exist, the
+ *  structure is deallocated.
+ *
+ *  @Proc: A pointer to a pointer to the process structure whose reference
+ *  count is to be decremented. If the reference count reaches zero, the
+ *  process structure is destroyed and the pointer is set to 'NULL'.
+ */
+extern void
+ProcUnref(
+        _Inout_ PPROC* Proc
     );
 
 /*

@@ -215,6 +215,46 @@ NTSTATUS ProcCopy(_Out_ PPROC Dest, _In_ PPROC Src) {
 }
 
 /*
+ *  ProcRef() -
+ *
+ *  Increments the reference count of a process structure. This function is used
+ *  to indicate that a reference to the process structure is being held.
+ *
+ *  @Proc: A pointer to the process structure whose reference count is to be
+ *  incremented.
+ */
+void ProcRef(_Inout_ PPROC Proc) {
+
+    if(Proc) {
+        Proc->Ref++;
+    }
+}
+
+/*
+ *  ProcUnref() -
+ *
+ *  Decrements the reference count of a process structure and destroys it if
+ *  the reference count reaches zero. This function is used to release a
+ *  reference to the process structure, and if no more references exist, the
+ *  structure is deallocated.
+ *
+ *  @Proc: A pointer to a pointer to the process structure whose reference
+ *  count is to be decremented. If the reference count reaches zero, the
+ *  process structure is destroyed and the pointer is set to 'NULL'.
+ */
+void ProcUnref(_Inout_ PPROC* Proc) {
+
+    if(Proc && *Proc) {
+        if((*Proc)->Ref) {
+            (*Proc)->Ref--;
+            if(!(*Proc)->Ref) {
+                ProcDestroy(Proc);
+            }
+        }
+    }
+}
+
+/*
  *  ProcDestroy() -
  *
  *  Cleans up and deallocates memory for a given 'PROC' structure. This

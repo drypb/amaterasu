@@ -316,6 +316,7 @@ NTSTATUS FSEventCopy(_Out_ PFS_EVENT Dest, _In_ PFS_EVENT Src) {
 void FSEventDestroy(_Inout_ PFS_EVENT* FSEvent) {
 
     if(FSEvent && *FSEvent) {
+        ProcUnref((*FSEvent)->Proc);
         /*
          *  The 'Proc' field in the 'FSEvent' structure is not destroyed here 
          *  because it is merely a reference to an object in the AVL tree that 
