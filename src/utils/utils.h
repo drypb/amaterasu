@@ -29,7 +29,8 @@ extern NTSTATUS
 CopyToUserMode(
         _Out_ PVOID  Dest,
         _In_  PVOID  Src,
-        _In_  SIZE_T Size
+        _In_  SIZE_T Size,
+        _In_  SIZE_T Align
     );
 
 /*
@@ -56,9 +57,9 @@ CopyToUserMode(
  */
 extern NTSTATUS 
 InitUnicodeString(
-        _PoolType_ POOL_TYPE PoolType, 
-        _Inout_ PUNICODE_STRING UniStr, 
-        _In_ SIZE_T Size
+        _PoolType_ POOL_TYPE       PoolType, 
+        _Inout_    PUNICODE_STRING UniStr, 
+        _In_       SIZE_T          Size
     );
 
 #endif  /* UTILS_H */
