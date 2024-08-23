@@ -2,6 +2,17 @@
 #include "fsfltr.h"
 
 /*
+ *  Points to the struct that represents the currently loaded file system filter
+ *  (FSFLTR). This variable ensures that the module remains self-sufficient, as
+ *  it avoids direct references to the Amaterasu structure, thereby preventing
+ *  dependencies on external changes.
+ *
+ *  When the filter is loaded, this variable is set to a valid pointer. When the
+ *  filter is unloaded, it is set to 'NULL'.
+ */
+PFSFLTR PFSFltr;
+
+/*
  *  FSFltrDefaultCallback() -
  *
  *  This callback function is invoked for each I/O operation intercepted by the
@@ -34,9 +45,9 @@ static FLT_PREOP_CALLBACK_STATUS FSFltrDefaultCallback(_Inout_ PFLT_CALLBACK_DAT
     eProc = FltGetRequestorProcess(Data);
     if(eProc) {
         if(AmaterasuLookupNoRef(eProc)) {
-            FSEvent = FSEventCreate(Amaterasu.FSFltr->PoolType, Data, FltObjs);
+            FSEvent = FSEventCreate(PFSFltr->PoolType, Data, FltObjs);
             if(FSEvent) {
-                ListInsert(Amaterasu.FSFltr->List, FSEvent);
+                ListInsert(PFSFltr->List, FSEvent);
             }
         }
         ObDereferenceObject(eProc);
@@ -198,7 +209,8 @@ PFSFLTR FSFltrLoad(_Inout_ PDRIVER_OBJECT DriverObj) {
 
     FSFltr = FSFltrAlloc(POOL_FLAG_NON_PAGED);
     if(FSFltr) {
-        Status = FSFltrInit(FSFltr, DriverObj);
+        PFSFltr = FSFltr;
+        Status  = FSFltrInit(FSFltr, DriverObj);
         if(!NT_SUCCESS(Status)) {
             FSFltrUnload(&FSFltr);
         }
@@ -224,6 +236,7 @@ void FSFltrUnload(_Inout_ PFSFLTR* FSFltr) {
         FltUnregisterFilter((*FSFltr)->FilterHandle);
         ListDestroy(&(*FSFltr)->List);
         ExFreePoolWithTag((*FsFltr));
+        PFsFltr = NULL;
         *FsFltr = NULL;
     }
 }

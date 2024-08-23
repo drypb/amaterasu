@@ -2,6 +2,17 @@
 #include "procfltr.h"
 
 /*
+ *  Points to the struct that represents the currently loaded process filter
+ *  (PROCFLTR). This variable ensures that the module remains self-sufficient, as
+ *  it avoids direct references to the Amaterasu structure, thereby preventing
+ *  dependencies on external changes.
+ *
+ *  When the filter is loaded, this variable is set to a valid pointer. When the
+ *  filter is unloaded, it is set to 'NULL'.
+ */
+PPROCFLTR PProcFltr;
+
+/*
  *  ProcFltrCallback() -
  *
  *  Handles process creation and termination notifications. This callback function
@@ -147,6 +158,7 @@ PPROCFLTR ProcFltrLoad(_Inout_ PDRIVER_OBJECT DriverObj) {
 
     ProcFltr = ProcFltrAlloc(POOL_FLAG_NON_PAGED);
     if(ProcFltr) {
+        PProcFltr = ProcFltr;
         Status = ProcFltrInit(ProcFltr, DriverObj);
         if(!NT_SUCCESS(Status)) {
             ProcFltrUnload(&ProcFltr);
@@ -173,6 +185,7 @@ void ProcFltrUnload(_Inout_ PPROCFLTR* ProcFltr) {
         ListDestroy((*ProcFltr)->List);
         PsSetCreateProcessNotifyRoutine(ProcFltrCallback, TRUE);
         ExFreePoolWithTag(*ProcFltr, 'pftr');
+        PProcFltr = NULL;
         *ProcFltr = NULL;
     }
 }

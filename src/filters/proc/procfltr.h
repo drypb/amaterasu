@@ -14,6 +14,17 @@ struct _PROCFLTR {
 typedef struct _PROCFLTR PROCFLTR, *PPROCFLTR;
 
 /*
+ *  Points to the struct that represents the currently loaded process filter
+ *  (PROCFLTR). This variable ensures that the module remains self-sufficient, as
+ *  it avoids direct references to the Amaterasu structure, thereby preventing
+ *  dependencies on external changes.
+ *
+ *  When the filter is loaded, this variable is set to a valid pointer. When the
+ *  filter is unloaded, it is set to 'NULL'.
+ */
+extern PPROCFLTR PProcFltr;
+
+/*
  * ProcFltrLoad() -
  *
  * Loads and initializes a process filter associated with the driver. This

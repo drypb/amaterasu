@@ -15,6 +15,17 @@ struct _FSFLTR {
 typedef struct _FSFLTR FSFLTR, *PFSFLTR;
 
 /*
+ *  Points to the struct that represents the currently loaded file system filter
+ *  (FSFLTR). This variable ensures that the module remains self-sufficient, as
+ *  it avoids direct references to the Amaterasu structure, thereby preventing
+ *  dependencies on external changes.
+ *
+ *  When the filter is loaded, this variable is set to a valid pointer. When the
+ *  filter is unloaded, it is set to 'NULL'.
+ */
+extern PFSFLTR PFSFltr;
+
+/*
  *  FSFltrLoad() -
  *
  *  Loads and initializes a file system filter associated with the driver. This
