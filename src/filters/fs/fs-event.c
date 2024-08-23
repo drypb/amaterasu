@@ -264,6 +264,29 @@ PFS_EVENT FSEventCreate(_PoolType_ POOL_TYPE PoolType, _In_ PFLT_CALLBACK_DATA D
 }
 
 /*
+ *  FSEventCopyMeta() -
+ *
+ *  @Dest:
+ *  @Src:
+ *
+ *  Return:
+ *    -
+ *    -
+ */
+static NTSTATUS FSEventCopyMeta(_Out_ PFS_EVENT Dest, _In_ PFS_EVENT Src) {
+
+    NTSTATUS Status;
+
+    IF_SUCCESS(Status,
+        ProcCopy(Dest->Proc , Src->Proc),
+        TimeCopy(&Dest->Time, &Src->Time),
+        FileEventCopy(Dest->FileEvent, Src->FileEvent),
+    );
+
+    return Status;
+}
+
+/*
  *  FSEventCopy() -
  *
  *  Copies the contents of a source 'FS_EVENT' structure to a destination 
@@ -290,11 +313,9 @@ NTSTATUS FSEventCopy(_Out_ PFS_EVENT Dest, _In_ PFS_EVENT Src) {
     Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
-            ProcCopy(Dest->Proc , Src->Proc),
-            TimeCopy(&Dest->Time, &Src->Time),
-            FileEventCopy(Dest->FileEvent, Src->FileEvent),
-            CopyToUserMode(&Dest->MjFunc , &Src->MjFunc  , sizeof Src->MjFunc , UCHAR),
-            CopyToUserMode(&Dest->Options, &Dest->Options, sizeof Src->Options, ULONG)
+            FSEventCopyMeta(Dest, Src),
+            CopyToUserMode(&Dest->MjFunc , &Src->MjFunc  , sizeof Src->MjFunc),
+            CopyToUserMode(&Dest->Options, &Dest->Options, sizeof Src->Options)
         );
     }
 

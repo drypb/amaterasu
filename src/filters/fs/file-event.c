@@ -227,8 +227,8 @@ NTSTATUS FileEventCopy(_Out_ PFILE_EVENT Dest, _In_ PFILE_EVENT Src) {
     Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
-            CopyToUserMode(Dest->Name, Src->Name, sizeof Src->Name, WCHAR), 
-            CopyToUserMode(Dest->Path, Src->Path, sizeof Src->Path, WCHAR)
+            CopyToUserMode(Dest->Name, Src->Name, sizeof Src->Name), 
+            CopyToUserMode(Dest->Path, Src->Path, sizeof Src->Path)
         );
     }
 

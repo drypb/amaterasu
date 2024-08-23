@@ -141,7 +141,7 @@ NTSTATUS ProcEventCopy(_Out_ PPROC_EVENT Dest, _In_ PPROC_EVENT Src) {
     if(Dest && Src) {
         IF_SUCCESS(Status,
             ProcCopy(Dest->Proc, Dest->Src),
-            CopyToUserMode(&Dest->Created, &Src->Created, sizeof Src->Created, BOOLEAN);
+            CopyToUserMode(&Dest->Created, &Src->Created, sizeof Src->Created);
         );
     }
 

@@ -154,57 +154,26 @@ DbgPrintEx(						                            \
 #define Assert(expr, ...) AssertExpr(expr, __VA_ARGS__)
 
 /*
- *  PROBE_AND_COPY() -
+ *  CopyToUserMode() - 
  *
- *  Safely copies a block of memory from kernel mode to user mode. The macro
- *  ensures that the destination buffer is writable by the user mode process
- *  before performing the memory copy operation.
- *
- *  @Dest: Pointer to the destination buffer in user mode where the data
- *  will be copied to. The buffer must be writable.
- *
- *  @Src: Pointer to the source buffer in kernel mode from which the data
- *  will be copied. The buffer is read-only.
- *
- *  @Size: The size of the data to be copied, in bytes.
- *
- *  Note:
- *    The macro uses `ProbeForWrite` to validate that the user mode buffer
- *    is accessible for writing and `RtlCopyMemory` to perform the actual
- *    copy. The alignment of the source buffer is used for the probe operation.
- */
-#define PROBE_AND_COPY(Dest, Src, Size, Align)              \
-    do {                                                    \
-        if(Dest && Src) {                                   \
-            ProbeForWrite(Dest, Src, Align);                \
-            RtlCopyMemory(Dest, Src, Size);                 \
-        }                                                   \
-    } while(0)
-
-/*
- *  CopyToUserMode() -
- *
- *  A macro that wraps the `CopyToUserMode` function, providing an easier way
- *  to copy data from a kernel mode buffer to a user mode buffer while ensuring
- *  correct alignment based on the data type. This ensures that the data is
- *  properly aligned in memory, which is crucial for avoiding potential access
- *  violations or performance penalties on some architectures.
+ *  Macro for copying data to user mode. This macro simplifies the use of the
+ *  'CopyToUserMode' function by calling it with a NULL pointer for the 'Bytes'
+ *  parameter, which indicates that the number of bytes transferred is not
+ *  required.
  *
  *  @Dest: A pointer to the destination buffer in user mode where the data will
  *  be copied.
  *
- *  @Src: A pointer to the source buffer in kernel mode from which the data
- *  will be copied.
- *
- *  @Size: The size, in bytes, of the data to be copied.
- *  @Type: The type of the data being copied, used to determine the correct
- *  alignment.
+ *  @Src: A pointer to the source buffer containing the data to be copied.
+ *  @Size: The size, in bytes, of the data to be copied from the source to the
+ *  destination.
  *
  *  Return:
  *    - 'STATUS_SUCCESS' if the data was successfully copied.
- *    - 'STATUS_UNSUCCESSFUL' if an exception occurred during the copy.
+ *    - 'STATUS_UNSUCCESSFUL' if an exception occurred during the copy or if
+ *      the parameters were invalid.
  */
-#define CopyToUserMode(Dest, Src, Size, Type)               \
-        (CopyToUserMode)(Dest, Src, Size, __alignof(Type))
+#define CopyToUserMode(Dest, Src, Size)                     \
+        (CopyToUserMode(Dest, Src, Size, NULL))
 
 #endif  /* UTILS_DEFS_H */

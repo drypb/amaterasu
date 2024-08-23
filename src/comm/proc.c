@@ -199,15 +199,18 @@ PPROC ProcCreate(_PoolType_ POOL_TYPE PoolType, _In_ PEPROCESS eProc) {
 NTSTATUS ProcCopy(_Out_ PPROC Dest, _In_ PPROC Src) {
     
     NTSTATUS Status;
+    SIZE_T Copied ;
 
+    Copied = 0;
     Status = STATUS_UNSUCCESSFUL;
+
     if(Dest && Src) {
         IF_SUCCESS(Status,
-            TokenCopy(Dest->Token, Src->Token),
-            CopyToUserMode(Dest->Image, Src->Image, sizeof Src->Image, WCHAR ),
-            CopyToUserMode(&Dest->PPID, &Src->PPID, sizeof Src->PPID , HANDLE),
-            CopyToUserMode(&Dest->PID , &Src->PID , sizeof Src->PID  , HANDLE),
-            CopyToUserMode(&Dest->SID , &Src->SID , sizeof Src->SID  , HANDLE)
+            TokenCopy(Dest->Token, Src->Token, &Copied); Bytes += Copied,
+            CopyToUserMode(Dest->Image, Src->Image, sizeof Src->Image, &Copied); Bytes += Copied,
+            CopyToUserMode(&Dest->PPID, &Src->PPID, sizeof Src->PPID , &Copied); Bytes += Copied,
+            CopyToUserMode(&Dest->PID , &Src->PID , sizeof Src->PID  , &Copied); Bytes += Copied,
+            CopyToUserMode(&Dest->SID , &Src->SID , sizeof Src->SID  , &Copied); Bytes += Copied
         );
     }
 

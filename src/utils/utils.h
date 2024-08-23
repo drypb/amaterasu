@@ -6,31 +6,31 @@
 /*
  *  CopyToUserMode() -
  *
- *  Copies data from a kernel mode buffer to a user mode buffer, ensuring
- *  proper alignment and exception handling to safely manage potential errors
- *  during the copy operation. If an exception is caught, the function returns
- *  'STATUS_UNSUCCESSFUL'. Otherwise, it returns 'STATUS_SUCCESS' after a
- *  successful copy.
+ *  Copies data from a source buffer to a destination buffer in user mode. This
+ *  function uses 'MmCopyMemory' to safely transfer data, handling any potential
+ *  exceptions that may occur during the operation.
  *
  *  @Dest: A pointer to the destination buffer in user mode where the data will
  *  be copied.
  *
- *  @Src: A pointer to the source buffer in kernel mode from which the data
- *  will be copied.
+ *  @Src: A pointer to the source buffer containing the data to be copied.
+ *  @Size: The size, in bytes, of the data to be copied from the source to the
+ *  destination.
  *
- *  @Size: The size of the buffer, in bytes, of the data to be copied.
- *  @Align: The alignment requirement for the data to be copied.
+ *  @Bytes: A pointer to a variable that will receive the number of bytes
+ *  successfully transferred. This parameter is optional and can be NULL.
  *
  *  Return:
  *    - 'STATUS_SUCCESS' if the data was successfully copied.
- *    - 'STATUS_UNSUCCESSFUL' if an exception occurred during the copy.
+ *    - 'STATUS_UNSUCCESSFUL' if an exception occurred during the copy or if
+ *      the parameters were invalid.
  */
 extern NTSTATUS 
 CopyToUserMode(
-        _Out_ PVOID  Dest,
-        _In_  PVOID  Src,
-        _In_  SIZE_T Size,
-        _In_  SIZE_T Align
+        _Out_ PVOID   Dest,
+        _In_  PVOID   Src,
+        _In_  SIZE_T  Size,
+        _Out_ PSIZE_T Bytes
     );
 
 /*

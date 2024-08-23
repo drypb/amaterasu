@@ -234,10 +234,10 @@ NTSTATUS TokenCopy(_Out_ PTOKEN Dest, _In_  PTOKEN Src) {
     Status = STATUS_UNSUCCESSFUL;
     if(Dest && Src) {
         IF_SUCCESS(Status,
-            CopyToUserMode(Dest->Privileges, Src->Privileges, sizeof Src->Privileges, TOKEN_PRIVILEGES),
-            CopyToUserMode(Dest->Statistics, Src->Statistics, sizeof Src->Statistics, TOKEN_STATISTICS),
-            CopyToUserMode(Dest->Elevation , Src->Elevation , sizeof Src->Elevation , TOKEN_ELEVATION),
-            CopyToUserMode(&Dest->Integrity, &Src->Integrity, sizeof Src->Integrity , DWORD)
+            CopyToUserMode(Dest->Privileges, Src->Privileges, sizeof Src->Privileges),
+            CopyToUserMode(Dest->Statistics, Src->Statistics, sizeof Src->Statistics),
+            CopyToUserMode(Dest->Elevation , Src->Elevation , sizeof Src->Elevation),
+            CopyToUserMode(&Dest->Integrity, &Src->Integrity, sizeof Src->Integrity)
         );
     }
 
